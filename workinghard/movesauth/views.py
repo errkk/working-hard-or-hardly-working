@@ -2,6 +2,7 @@ from os import environ
 from datetime import datetime
 
 from django.shortcuts import render, redirect
+from django.views.generic import FormView, ListView
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -54,3 +55,15 @@ def redirect_view(request):
         )
 
         return render(request, 'movesauth/redirect.html')
+
+
+class SelectWorkPlace(ListView):
+    template_name = 'list.html'
+
+    def get_queryset(self, **kwargs):
+        res = self.request.user.token.query(
+                moves.DAILY, pastDays=3)
+        return res
+
+
+select_work_place = SelectWorkPlace.as_view()

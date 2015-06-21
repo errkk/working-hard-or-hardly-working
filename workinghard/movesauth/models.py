@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import requests
+
 from django.utils import timezone
 from django.db import models
 from django.conf import settings
@@ -37,8 +39,19 @@ class Token(models.Model):
                                      'refresh_token',
                                      'expires'])
 
-    def query(self, endpoint):
+    def query(self, endpoint, **kwargs):
         headers = {
             'Authorization': 'Bearer {0}'.format(self.access_token),
         }
-        return requests.get(Moves.BASE_URI + endpoint, headers=headers)
+        res = requests.get(Moves.BASE_URI + endpoint,
+                           params=kwargs, headers=headers)
+        return res.json()
+
+
+class UserData(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    workplace = models.CharField(max_length=100, blank=True, null=True)

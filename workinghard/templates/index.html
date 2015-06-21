@@ -2,5 +2,9 @@
 
 {% block content %}
 <h1>Working hard? or hardly working?</h1>
-
+{% if request.user.user_data.workplace %}
+<a href="{% url 'movesauth:select_work_place' %}">Select your workplace</a>
+{% else %}
+<a href="{% url 'movesauth:select_work_place' %}">Change your workplace</a>
+{% endif %}
 {% endblock %}

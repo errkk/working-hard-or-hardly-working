@@ -1,0 +1,12 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+{% for day in object_list %}
+    <h1>Day {{ day.date }}</h1>
+    {% for object in day.segments %}
+        <h2>{{ object.place.name }}</h2>
+        <p>{{ object.startTime }} to {{ object.endTime }}</p>
+    {% endfor %}
+{% endfor %}
+{% endblock %}
