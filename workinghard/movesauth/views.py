@@ -1,28 +1,40 @@
 from os import environ
+from datetime import datetime
 
 from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse, reverse_lazy
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 from .movesclient import Moves
 from .models import Token
 
-MOVES_CLIENT_ID = environ.get('MOVES_CLIENT_ID')
-MOVES_CLIENT_SECRET = environ.get('MOVES_CLIENT_SECRET')
+moves = Moves(settings.MOVES_CLIENT_ID,
+              settings.MOVES_CLIENT_SECRET)
 
-moves = Moves(MOVES_CLIENT_ID, MOVES_CLIENT_SECRET)
-
-
+@login_required
 def start(request):
     redirect_uri = request.build_absolute_uri(
             reverse('movesauth:redirect'))
 
-    c = {
-        'authorise_uri': moves.get_auth_uri(redirect_uri),
-    }
+    if not hasattr(request.user, 'token'):
+        return redirect(moves.get_auth_uri(redirect_uri))
 
-    return render(request, 'movesauth/start.html', c)
+    elif request.user.token.has_expired():
+        print 'Token expired. refresh it'
+        try:
+            request.user.token.refresh()
+        except:
+            #TODO custom exception for oauth error
+            # request.user.token.delete()
+            # return redirect(moves.get_auth_uri(redirect_uri))
+            # TODO make this work, grant_type error from moves
+            pass
+
+    return render(request, 'movesauth/start.html')
 
 
+@login_required
 def redirect_view(request):
     redirect_uri = request.build_absolute_uri(
             reverse('movesauth:redirect'))
@@ -33,6 +45,10 @@ def redirect_view(request):
         print 'Exception raised by Moves'
         return redirect(reverse('movesauth:start'))
     else:
+        if hasattr(request.user, 'token'):
+            print 'Deleting old token'
+            request.user.token.delete()
+
         token = Token.objects.create(
             user=request.user,
             access_token=data.get('access_token'),

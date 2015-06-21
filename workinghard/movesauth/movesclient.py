@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from os import environ
 from urllib import urlencode
 from datetime import datetime, timedelta
 
@@ -9,6 +8,7 @@ import requests
 
 class Moves():
 
+    BASE_URI = 'https://api.moves-app.com/api/1.1'
     AUTHORISE_URI = 'https://api.moves-app.com/oauth/v1/authorize'
     TOKEN_URI = 'https://api.moves-app.com/oauth/v1/access_token'
     SCOPE = 'location activity'
@@ -36,11 +36,10 @@ class Moves():
         }
         return self._request_token(**data)
 
-    def refresh_token(self, refresh_token, redirect_uri):
+    def refresh_token(self, refresh_token):
         data = {
             'grant_type': self.REFRESH_TOKEN,
             'refresh_token': refresh_token,
-            'redirect_uri': redirect_uri,
         }
         return self._request_token(**data)
 
@@ -52,7 +51,8 @@ class Moves():
         data.update(kwargs)
         r = requests.post(self.TOKEN_URI, data=data)
         res = r.json()
-        print r.status_code
+        if 200 != r.status_code:
+            raise Exception(r.content)
         expires_in = int(res['expires_in'])
         expires = datetime.now() + timedelta(seconds=expires_in)
         return res, expires

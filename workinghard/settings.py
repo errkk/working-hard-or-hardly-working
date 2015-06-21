@@ -78,8 +78,8 @@ WSGI_APPLICATION = 'workinghard.wsgi.application'
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 DATABASES = {}
-DATABASES['default'] =  dj_database_url.config()
-DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
+DATABASES['default'] =  dj_database_url.config(default='sqlite:///{0}/db.sqlite'.format(BASE_DIR))
+# DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
 
 
 
@@ -106,3 +106,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+# Moves API stuff
+MOVES_CLIENT_ID = os.environ.get('MOVES_CLIENT_ID')
+MOVES_CLIENT_SECRET = os.environ.get('MOVES_CLIENT_SECRET')
