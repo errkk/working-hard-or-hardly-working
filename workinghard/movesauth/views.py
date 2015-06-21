@@ -6,14 +6,14 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
-from .movesclient import Moves
+from .movesclient import Moves, InvalidGrant
 from .models import Token
 
 moves = Moves(settings.MOVES_CLIENT_ID,
               settings.MOVES_CLIENT_SECRET)
 
 @login_required
-def start(request):
+def index(request):
     redirect_uri = request.build_absolute_uri(
             reverse('movesauth:redirect'))
 
@@ -21,17 +21,13 @@ def start(request):
         return redirect(moves.get_auth_uri(redirect_uri))
 
     elif request.user.token.has_expired():
-        print 'Token expired. refresh it'
         try:
             request.user.token.refresh()
-        except:
-            #TODO custom exception for oauth error
-            # request.user.token.delete()
-            # return redirect(moves.get_auth_uri(redirect_uri))
-            # TODO make this work, grant_type error from moves
-            pass
+        except InvalidGrant, e:
+            request.user.token.delete()
+            return redirect(moves.get_auth_uri(redirect_uri))
 
-    return render(request, 'movesauth/start.html')
+    return render(request, 'index.html')
 
 
 @login_required

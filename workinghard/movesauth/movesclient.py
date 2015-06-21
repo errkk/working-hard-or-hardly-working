@@ -6,6 +6,10 @@ from datetime import datetime, timedelta
 import requests
 
 
+class InvalidGrant(Exception):
+    pass
+
+
 class Moves():
 
     BASE_URI = 'https://api.moves-app.com/api/1.1'
@@ -49,10 +53,10 @@ class Moves():
             'client_secret': self.client_secret,
         }
         data.update(kwargs)
-        r = requests.post(self.TOKEN_URI, data=data)
+        r = requests.post(self.TOKEN_URI, params=data)
         res = r.json()
         if 200 != r.status_code:
-            raise Exception(r.content)
+            raise InvalidGrant(r.content)
         expires_in = int(res['expires_in'])
         expires = datetime.now() + timedelta(seconds=expires_in)
         return res, expires
