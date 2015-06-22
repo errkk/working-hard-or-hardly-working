@@ -113,9 +113,11 @@ class MovesSegmentList:
                             [segment.duration]
 
         for place_id, durations in self.place_times.iteritems():
+            total = reduce(operator.add, durations)
             print self.places[place_id].get('name', None),\
                 'Segments: ', len(durations),\
-                'Total: ', reduce(operator.add, durations)
+                'Total: ', total,\
+                'Hours: ', total.total_seconds() / 60 / 60
 
 
     def __iter__(self):
