@@ -1,12 +1,12 @@
-
 {% extends 'base.html' %}
+{% load timestamp_parser %}
 
 {% block content %}
 {% for day in object_list %}
-    <h1>Day {{ day.date }}</h1>
+    <h1>Day {{ day.date|date:"D d M Y" }}</h1>
     {% for object in day.segments %}
         <h2>{{ object.place.name }}</h2>
-        <p>{{ object.startTime }} to {{ object.endTime }}</p>
+        <p>{{ object.startTime|datestring_to_time|date:"D d M Y H:i:s" }} to {{ object.endTime|datestring_to_time|date:"D d M Y H:i:s" }}</p>
     {% endfor %}
 {% endfor %}
 {% endblock %}
