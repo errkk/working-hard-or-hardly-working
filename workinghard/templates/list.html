@@ -2,19 +2,11 @@
 {% load timestamp_parser %}
 
 {% block content %}
-<<<<<<< HEAD
-{% for object in object_list %}
-    <h2>{{ object.name }}</h2>
-    <p>{{ object.start|date:"D d M Y H:i:s" }} to {{ object.end|date:"D d M Y H:i:s" }} - {{ object.duration }}</p>
-    <p>Is this work? {{ object.might_be_work }}</p>
-    <hr />
-=======
-{% for day in object_list %}
-    <h1>Day {{ day.date|date:"D d M Y" }}</h1>
-    {% for object in day.segments %}
-        <h2>{{ object.place.name }}</h2>
-        <p>{{ object.startTime|datestring_to_time|date:"D d M Y H:i:s" }} to {{ object.endTime|datestring_to_time|date:"D d M Y H:i:s" }}</p>
-    {% endfor %}
->>>>>>> cc8a1fb414cb8c97e7404c03ddfbc05c909bfcee
+{% for place in object_list %}
+<h2>
+{{ place.name }} - {{ place.might_be_work }}
+</h2>
+{{ place.total }}
+<hr />
 {% endfor %}
 {% endblock %}

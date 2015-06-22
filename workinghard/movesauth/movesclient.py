@@ -113,13 +113,22 @@ class MovesSegmentList:
                             [segment.duration]
 
         for place_id, durations in self.place_times.iteritems():
-            total = reduce(operator.add, durations)
-            print self.places[place_id].get('name', None),\
-                'Segments: ', len(durations),\
-                'Total: ', total,\
-                'Hours: ', total.total_seconds() / 60 / 60
+            name = self.places[place_id].get('name', None)
+            self.places[place_id]['might_be_work'] = 0
+            self.places[place_id]['total'] =\
+                    total = reduce(operator.add, durations)
 
+            self.places[place_id]['hours'] = \
+                    hours = total.total_seconds() / 60 / 60
+
+            if hours > 10:
+                self.places[place_id]['might_be_work'] += 1
+            if name and name.lower in ['work', 'office']:
+                self.places[place_id]['might_be_work'] += 1
+
+            print self.places[place_id]
 
     def __iter__(self):
-        for i in self.segments:
-            yield i
+        for (place_id, place) in self.places.iteritems():
+            print place
+            yield place
