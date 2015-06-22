@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+import operator
 from urllib import urlencode
 from datetime import datetime, timedelta
+from dateutil import parser
 
 import requests
 
@@ -62,3 +64,60 @@ class Moves():
         expires_in = int(res['expires_in'])
         expires = datetime.now() + timedelta(seconds=expires_in)
         return res, expires
+
+
+class MovesSegment:
+    def __init__(self, **kwargs):
+        self.might_be_work = 0
+
+        for (k, v) in kwargs.iteritems():
+            setattr(self, k, v)
+
+        if hasattr(self, 'startTime') and hasattr(self, 'endTime'):
+            self._parse_datestrings()
+
+        self.place_id = int(self.place['id'])
+
+        if self.name and self.name in ['work', 'office']:
+            self.might_be_work += 2
+        if self.place['type'].lower == 'work':
+            self.might_be_work += 2
+        if self.duration > timedelta(hours=7):
+            self.might_be_work += 1
+
+    def _parse_datestrings(self):
+        self.start = parser.parse(self.startTime)
+        self.end = parser.parse(self.endTime)
+        self.duration = self.end - self.start
+        self.name = self.place.get('name', None)
+        self.name = self.name.lower() if self.name else None
+
+
+
+class MovesSegmentList:
+    def __init__(self, items):
+        self.segments = []
+        self.place_times = {}
+        self.places = {}
+
+        for day in items:
+            for item in day['segments']:
+                segment = MovesSegment(**item)
+                self.segments.append(segment)
+                self.places[segment.place_id] = segment.place
+                if segment.place_id in self.place_times:
+                    self.place_times[segment.place_id]\
+                            .append(segment.duration)
+                else:
+                    self.place_times[segment.place_id] =\
+                            [segment.duration]
+
+        for place_id, durations in self.place_times.iteritems():
+            print self.places[place_id].get('name', None),\
+                'Segments: ', len(durations),\
+                'Total: ', reduce(operator.add, durations)
+
+
+    def __iter__(self):
+        for i in self.segments:
+            yield i

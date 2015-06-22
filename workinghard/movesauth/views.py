@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
-from .movesclient import Moves, InvalidGrant
+from .movesclient import Moves, InvalidGrant, MovesSegmentList
 from .models import Token
 
 moves = Moves(settings.MOVES_CLIENT_ID,
@@ -61,9 +61,12 @@ class SelectWorkPlace(ListView):
     template_name = 'list.html'
 
     def get_queryset(self, **kwargs):
+        """ Sort segments by dwell time, try to find likely workplace
+        """
         res = self.request.user.token.query(
-                moves.DAILY, pastDays=3)
-        return res
+                moves.DAILY, pastDays=7)
+        segment_list = MovesSegmentList(res)
+        return segment_list
 
 
 select_work_place = SelectWorkPlace.as_view()
