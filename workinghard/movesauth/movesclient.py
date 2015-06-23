@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import unicode_literals
+
 import operator
 from urllib import urlencode
 from datetime import datetime, timedelta
@@ -78,10 +80,6 @@ class MovesSegment:
 
         self.place_id = int(self.place['id'])
 
-        if self.name and self.name in ['work', 'office']:
-            self.might_be_work += 2
-        if self.place['type'].lower == 'work':
-            self.might_be_work += 2
         if self.duration > timedelta(hours=7):
             self.might_be_work += 1
 
@@ -113,22 +111,38 @@ class MovesSegmentList:
                             [segment.duration]
 
         for place_id, durations in self.place_times.iteritems():
-            name = self.places[place_id].get('name', None)
-            self.places[place_id]['might_be_work'] = 0
+            name = self.places[place_id].get('name', '')
+            place_type = self.places[place_id]['type']
+
+            self.places[place_id]['might_be_work'] = 1
+
             self.places[place_id]['total'] =\
                     total = reduce(operator.add, durations)
 
             self.places[place_id]['hours'] = \
                     hours = total.total_seconds() / 60 / 60
 
-            if hours > 10:
-                self.places[place_id]['might_be_work'] += 1
-            if name and name.lower in ['work', 'office']:
+
+            # For this period (a week)
+            if hours > 20:
                 self.places[place_id]['might_be_work'] += 1
 
-            print self.places[place_id]
+            if name and name.lower() in ['work', 'office']:
+                self.places[place_id]['might_be_work'] += 1
+            if name and name.lower() in ['home']:
+                self.places[place_id]['might_be_work'] -= 1
+                print 'Home name', place_type, name
+
+            # Type
+            if place_type.lower() in ['work']:
+                self.places[place_id]['might_be_work'] += 1
+            if place_type.lower() in ['home']:
+                self.places[place_id]['might_be_work'] -= 1
+                print 'Home type', place_type, name
+
 
     def __iter__(self):
-        for (place_id, place) in self.places.iteritems():
-            print place
+        places = filter(lambda place: place['might_be_work'] > 1,
+                        self.places.itervalues())
+        for place in places:
             yield place
