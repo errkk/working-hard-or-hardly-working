@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Places where you might work</h1>
+{% for place in object_list %}
+    <h2>{{ place.name }} - {{ place.might_be_work }}</h2>
+    <p>You were there for {{ place.hours }} hours last week</p>
+    <hr />
+{% endfor %}
+
+{% include 'includes/form.html' %}
+
+{% endblock %}

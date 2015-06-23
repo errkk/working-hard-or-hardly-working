@@ -54,4 +54,10 @@ class UserData(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    workplace = models.CharField(max_length=100, blank=True, null=True)
+    workplace_id = models.IntegerField(blank=True, null=True)
+    workplace_name = models.CharField(max_length=100, blank=True,
+                                      null=True)
+
+    def __unicode__(self):
+        return '<{0} @ {1}>'.format(self.user.username,
+                                    self.workplace_name)

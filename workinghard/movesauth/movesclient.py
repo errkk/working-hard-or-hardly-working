@@ -114,6 +114,7 @@ class MovesSegmentList:
             name = self.places[place_id].get('name', '')
             place_type = self.places[place_id]['type']
 
+            self.places[place_id]['place_id'] = place_id
             self.places[place_id]['might_be_work'] = 1
 
             self.places[place_id]['total'] =\

@@ -1,7 +1,7 @@
 from os import environ
 from datetime import datetime
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, render_to_response
 from django.views.generic import FormView, ListView
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
@@ -9,9 +9,12 @@ from django.conf import settings
 
 from .movesclient import Moves, InvalidGrant, MovesSegmentList
 from .models import Token
+from .forms import WorkplaceForm
+
 
 moves = Moves(settings.MOVES_CLIENT_ID,
               settings.MOVES_CLIENT_SECRET)
+
 
 @login_required
 def index(request):
@@ -57,16 +60,29 @@ def redirect_view(request):
         return render(request, 'movesauth/redirect.html')
 
 
-class SelectWorkPlace(ListView):
-    template_name = 'list.html'
+def select_work_place(request):
+    if 'place_list' in request.session:
+        place_list = request.session['place_list']
+        print 'Placelist from session'
+    else:
+        res = request.user.token.query(moves.DAILY, pastDays=7)
+        places = MovesSegmentList(res)
+        place_list = [(place['place_id'], place['name'])\
+                      for place in places]
 
-    def get_queryset(self, **kwargs):
-        """ Sort segments by dwell time, try to find likely workplace
-        """
-        res = self.request.user.token.query(
-                moves.DAILY, pastDays=7)
-        segment_list = MovesSegmentList(res)
-        return segment_list
+        print 'setting placelist to session'
 
+        request.session['place_list'] = place_list
 
-select_work_place = SelectWorkPlace.as_view()
+    if 'POST' == request.method:
+        form = WorkplaceForm(request.POST, places=place_list)
+
+        if form.is_valid():
+            print form.cleaned_data
+
+    else:
+        form = WorkplaceForm(places=place_list)
+
+    return render_to_response('form_select_workplace.html', {
+        'form': form
+    })

@@ -1,0 +1,31 @@
+<form action="" method="POST">
+    {% block form %}
+    {% csrf_token %}
+
+    {% for hidden in form.hidden_fields %}
+    {{ hidden }}
+    {% endfor %}
+
+    {% for field in form.visible_fields %}
+    <div class="clearfix{% if field.errors %} error{% endif %}">
+        {{ field.label_tag }}
+        <div class="input">
+            {{ field }}
+            {% if field.errors %}
+            {% for error in field.errors %}
+            <span class="help-inline">{{ error }}</span>
+            {% endfor %}
+            {% else %}
+            <span class="help-inline">{{ field.help_text }}</span>
+            {% endif %}
+        </div>
+    </div><!-- /clearfix -->
+    {% endfor %}
+
+    <div class="actions">
+        {% block actions %}
+        <button type="submit" class="btn primary">Submit</button>
+        {% endblock %}
+    </div>
+    {% endblock %}
+</form>
